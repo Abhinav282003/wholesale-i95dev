@@ -1,0 +1,115 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Note that some adapters may set a maximum length for the String type by default, please ensure your strings are long
+// enough when changing adapters.
+// See https://www.prisma.io/docs/orm/reference/prisma-schema-reference#string for more information
+datasource db {
+  provider = "sqlite"
+  url      = "file:dev.sqlite"
+}
+
+model Session {
+  id            String    @id
+  shop          String
+  state         String
+  isOnline      Boolean   @default(false)
+  scope         String?
+  expires       DateTime?
+  accessToken   String
+  userId        BigInt?
+  firstName     String?
+  lastName      String?
+  email         String?
+  accountOwner  Boolean   @default(false)
+  locale        String?
+  collaborator  Boolean?  @default(false)
+  emailVerified Boolean?  @default(false)
+}
+
+model I95DevShopifyMessage {
+  id           Int      @id @default(autoincrement())
+  shop         String
+  entityCode   String
+  shopifyId    String
+  variantId    String?
+  variantTitle String?
+  status       String // e.g., "pending", "request_transfered", "error", "success","completed"
+  erpCode      String?  @default("LAR")
+  erpId        String?
+  count        String
+  updatedBy    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([shop])
+  @@index([shopifyId])
+  @@index([entityCode])
+  @@index([createdAt])
+}
+
+model I95DevERPMessage {
+  id            Int             @id @default(autoincrement())
+  entityCode    String
+  targetId      String
+  variantId     String?
+  variantTitle  String?
+  status        String // e.g., "pending", "proccessing", "error", "success","completed"
+  erpCode       String?         @default("Laravel")
+  shopifyId     String?
+  counter       String
+  updatedBy     String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  I95DevErpData I95DevErpData[]
+
+  @@index([shopifyId])
+  @@index([entityCode])
+  @@index([createdAt])
+}
+
+model I95DevErpData {
+  id               Int               @id @default(autoincrement())
+  dataString       String
+  // Foreign key → I95DevERPMessage
+  msgId            Int?
+  i95DevERPMessage I95DevERPMessage? @relation(fields: [msgId], references: [id])
+
+  @@index([id])
+  @@index([msgId])
+}
+
+model Settings {
+  id   String @id @default(cuid())
+  shop String @unique
+
+  // Extension
+  extensionEnabled Boolean @default(false)
+  packetSize       Int     @default(10)
+
+  // Connector Settings
+  component String  @default("Laravel")
+  erpUrl    String?
+
+  // Connector Notification
+  emailConfirmations String? // JSON array of selected options
+
+  // General Contact Info
+  adminEmail    String?
+  adminUsername String?
+
+  // Credentials
+  apiIntegrationToken String?
+  encryptionPassKey   String?
+
+  // Message Queue Settings
+  retryLimit      Int  @default(1)
+  mqDataCleanDays Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
