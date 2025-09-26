@@ -1,0 +1,284 @@
+{% comment %}
+  Product Row Snippet
+  Usage: {% render 'product-row', product: product, page_number: page_number %}
+  
+  Parameters:
+  - product: The product object to display
+  - page_number: The page number for pagination
+{% endcomment %}
+
+<div class="table-row product-row" 
+     data-product-title="{{ product.title | downcase }}" 
+     data-collections="{% for collection in product.collections %}{{ collection.handle }} {% endfor %}" 
+     data-product-id="{{ product.id }}" 
+     data-page="{{ page_number }}">
+  
+  <!-- Image Column -->
+  <div class="table-cell image-column">
+    <div class="product-image">
+      {% if product.featured_image %}
+        <img src="{{ product.featured_image | img_url: '100x100', crop: 'center' }}" 
+             alt="{{ product.title }}" 
+             loading="lazy">
+      {% else %}
+        <img src="{{ 'no-image.png' | asset_url }}" 
+             alt="{{ product.title }}" 
+             loading="lazy" 
+             class="placeholder-image">
+      {% endif %}
+    </div>
+  </div>
+  
+  <!-- Product Column -->
+  <div class="table-cell product-column">
+    <div class="product-info">
+      <div class="product-details">
+        <a href="{{ product.url }}" class="product-title">{{ product.title }}</a>
+        {% if product.vendor %}
+          <p class="product-vendor">{{ product.vendor }}</p>
+        {% endif %}
+        {% if product.has_only_default_variant == false %}
+          <div class="variant-toggle">
+            <button type="button" class="variant-toggle-btn" data-product-id="{{ product.id }}">
+              <span class="toggle-text">Show Variants</span>
+              <span class="toggle-icon">▼</span>
+            </button>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  
+  <!-- Price Column -->
+  <div class="table-cell price-column">
+    {% if product.has_only_default_variant %}
+      {% assign first_variant = product.variants.first %}
+      <span class="price" data-price="{{ first_variant.price }}">{{ first_variant.price | money }}</span>
+    {% else %}
+      <span class="price-range">Multiple Prices</span>
+    {% endif %}
+  </div>
+  
+  <!-- Quantity Column -->
+  <div class="table-cell quantity-column">
+    {% if product.has_only_default_variant %}
+      {% assign first_variant = product.variants.first %}
+      <div class="quantity-wrapper">
+        <input 
+          tabindex="0" 
+          class="quantity field qty-input" 
+          id="{{ first_variant.id }}" 
+          step="1" 
+          pattern="^-?\d+$" 
+          product-id="{{ product.id }}" 
+          type="number" 
+          name="updates[{{ first_variant.id }}]" 
+          onfocus="this.select()" 
+          min="0" 
+          value="0"
+          data-variant-id="{{ first_variant.id }}"
+          {% unless first_variant.available %}disabled{% endunless %}
+        >
+      </div>
+    {% else %}
+      <span class="variant-required">Select Variant</span>
+    {% endif %}
+  </div>
+  
+  <!-- Total Column -->
+  <div class="table-cell total-column">
+    {% if product.has_only_default_variant %}
+      <span class="row-total price">Rs 0.00</span>
+    {% else %}
+      <span class="row-total price">Rs 0.00</span>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Variant Rows (if product has variants) -->
+{% if product.has_only_default_variant == false %}
+  <div class="variant-rows" data-product-id="{{ product.id }}" style="display: none;">
+    {% for variant in product.variants %}
+      <div class="table-row variant-row" data-variant-id="{{ variant.id }}" data-price="{{ variant.price }}">
+        <div class="table-cell image-column">
+          <div class="variant-indicator">└─</div>
+        </div>
+        <div class="table-cell product-column">
+          <div class="variant-info">
+            <span class="variant-title">
+              {% if variant.title != 'Default Title' %}
+                {{ variant.title }}
+              {% else %}
+                Default
+              {% endif %}
+            </span>
+            {% unless variant.available %}
+              <span class="sold-out-badge">Sold out</span>
+            {% endunless %}
+          </div>
+        </div>
+        <div class="table-cell price-column">
+          <span class="price" data-price="{{ variant.price }}">{{ variant.price | money }}</span>
+        </div>
+        <div class="table-cell quantity-column">
+          <div class="quantity-wrapper">
+            <input 
+              tabindex="0" 
+              class="quantity field qty-input" 
+              id="{{ variant.id }}" 
+              step="1" 
+              pattern="^-?\d+$" 
+              product-id="{{ product.id }}" 
+              type="number" 
+              name="updates[{{ variant.id }}]" 
+              onfocus="this.select()" 
+              min="0" 
+              value="0"
+              data-variant-id="{{ variant.id }}"
+              {% unless variant.available %}disabled{% endunless %}
+            >
+          </div>
+        </div>
+        <div class="table-cell total-column">
+          <span class="row-total price">Rs 0.00</span>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<style>
+  .table-row {
+    display: grid;
+    grid-template-columns: 80px 2fr 1fr 1fr 1fr;
+    gap: 16px;
+    padding: 16px;
+    border-bottom: 1px solid #e9ecef;
+    align-items: center;
+  }
+  
+  .table-row:hover {
+    background-color: #f8f9fa;
+  }
+  
+  .product-image img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+  }
+  
+  .product-title {
+    font-weight: 600;
+    color: #333;
+    text-decoration: none;
+  }
+  
+  .product-vendor {
+    font-size: 14px;
+    color: #666;
+    margin: 4px 0;
+  }
+  
+  .variant-toggle-btn {
+    background: none;
+    border: 1px solid #ddd;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    margin-top: 8px;
+    transition: all 0.2s ease;
+  }
+  
+  .variant-toggle-btn:hover {
+    background: #f5f5f5;
+    border-color: #007bff;
+  }
+  
+  .variant-toggle-btn.expanded {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+  }
+  
+  .variant-toggle-btn .toggle-icon {
+    margin-left: 4px;
+    transition: transform 0.2s ease;
+  }
+  
+  .price {
+    font-weight: 600;
+    color: #333;
+  }
+  
+  .price-range {
+    color: #666;
+    font-style: italic;
+  }
+  
+  .qty-input {
+    width: 60px;
+    padding: 4px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    text-align: center;
+  }
+  
+  .variant-required {
+    color: #666;
+    font-style: italic;
+  }
+  
+  .variant-rows {
+    background: #f8f9fa;
+    border-left: 3px solid #007bff;
+    margin-left: 16px;
+    border-radius: 0 4px 4px 0;
+  }
+  
+  .variant-row {
+    grid-template-columns: 80px 2fr 1fr 1fr 1fr;
+    padding: 8px 16px;
+    border-bottom: 1px solid #e9ecef;
+  }
+  
+  .variant-row:last-child {
+    border-bottom: none;
+  }
+  
+  .variant-indicator {
+    color: #666;
+    font-size: 12px;
+  }
+  
+  .variant-title {
+    font-size: 14px;
+    color: #333;
+  }
+  
+  .sold-out-badge {
+    background: #dc3545;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    margin-left: 8px;
+  }
+  
+  @media (max-width: 768px) {
+    .table-row {
+      grid-template-columns: 60px 1fr 1fr 1fr;
+      font-size: 14px;
+      padding: 12px;
+    }
+    
+    .table-cell.total-column {
+      display: none;
+    }
+    
+    .variant-row {
+      grid-template-columns: 60px 1fr 1fr 1fr;
+    }
+  }
+</style> 

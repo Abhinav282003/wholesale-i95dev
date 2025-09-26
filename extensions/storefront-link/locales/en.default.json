@@ -1,0 +1,25 @@
+{
+  "sections": {
+    "quick-order-list": {
+      "name": "Quick Order List",
+      "settings": {
+        "show_image": {
+          "label": "Show Product Image"
+        },
+        "show_sku": {
+          "label": "Show SKU"
+        }
+      }
+    },
+    "all": {
+      "colors": {
+        "label": "Color scheme"
+      },
+      "padding": {
+        "section_padding_heading": "Padding Settings",
+        "padding_top": "Top Padding",
+        "padding_bottom": "Bottom Padding"
+      }
+    }
+  }
+} 

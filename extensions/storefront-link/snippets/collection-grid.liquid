@@ -1,0 +1,224 @@
+{% comment %}
+  Collection Grid Snippet
+  Usage: {% render 'collection-grid', collection: collection, products_per_page: 12 %}
+  
+  Parameters:
+  - collection: The collection object to display
+  - products_per_page: Number of products to show per page (default: 12)
+  - show_pagination: Boolean to show/hide pagination (default: true)
+{% endcomment %}
+
+{% assign products_per_page = products_per_page | default: 12 %}
+{% assign total_products = collection.products.size %}
+{% assign total_pages = total_products | divided_by: products_per_page | ceil %}
+
+<div class="collection-grid" data-collection-id="{{ collection.id }}">
+  <div class="collection-header">
+    <h1 class="collection-title">{{ collection.title }}</h1>
+    {% if collection.description %}
+      <div class="collection-description">
+        {{ collection.description }}
+      </div>
+    {% endif %}
+    <p class="collection-count">
+      {{ total_products }} product{% if total_products != 1 %}s{% endif %}
+    </p>
+  </div>
+
+  <div class="products-grid" id="products-grid">
+    {% for product in collection.products limit: products_per_page %}
+      <div class="grid-item">
+        {% render 'product-card', 
+          product: product, 
+          show_vendor: true, 
+          show_price: true 
+        %}
+      </div>
+    {% endfor %}
+  </div>
+
+  {% if show_pagination != false and total_pages > 1 %}
+    <div class="pagination-wrapper">
+      <div class="pagination">
+        {% if total_pages > 1 %}
+          <button 
+            class="pagination-btn prev-btn" 
+            data-page="prev"
+            {% if current_page <= 1 %}disabled{% endif %}
+          >
+            Previous
+          </button>
+          
+          <div class="page-numbers">
+            {% for page in (1..total_pages) %}
+              <button 
+                class="pagination-btn page-btn {% if page == current_page %}active{% endif %}"
+                data-page="{{ page }}"
+              >
+                {{ page }}
+              </button>
+            {% endfor %}
+          </div>
+          
+          <button 
+            class="pagination-btn next-btn" 
+            data-page="next"
+            {% if current_page >= total_pages %}disabled{% endif %}
+          >
+            Next
+          </button>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+</div>
+
+<style>
+  .collection-grid {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .collection-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  
+  .collection-title {
+    font-size: 32px;
+    margin-bottom: 16px;
+    color: #333;
+  }
+  
+  .collection-description {
+    margin-bottom: 16px;
+    color: #666;
+    line-height: 1.6;
+  }
+  
+  .collection-count {
+    color: #888;
+    font-size: 14px;
+  }
+  
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+    margin-bottom: 40px;
+  }
+  
+  .grid-item {
+    display: flex;
+  }
+  
+  .pagination-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: 40px;
+  }
+  
+  .pagination {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .pagination-btn {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    background: white;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+  }
+  
+  .pagination-btn:hover:not(:disabled) {
+    background: #f5f5f5;
+  }
+  
+  .pagination-btn.active {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+  }
+  
+  .pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .page-numbers {
+    display: flex;
+    gap: 4px;
+  }
+  
+  @media (max-width: 768px) {
+    .products-grid {
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+    }
+    
+    .collection-title {
+      font-size: 24px;
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const paginationButtons = document.querySelectorAll('.pagination-btn');
+    const productsGrid = document.getElementById('products-grid');
+    const collectionId = document.querySelector('.collection-grid').dataset.collectionId;
+    
+    let currentPage = 1;
+    const productsPerPage = {{ products_per_page }};
+    const totalProducts = {{ total_products }};
+    const totalPages = {{ total_pages }};
+    
+    paginationButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        const page = this.dataset.page;
+        
+        if (page === 'prev' && currentPage > 1) {
+          currentPage--;
+        } else if (page === 'next' && currentPage < totalPages) {
+          currentPage++;
+        } else if (page !== 'prev' && page !== 'next') {
+          currentPage = parseInt(page);
+        }
+        
+        loadProducts(currentPage);
+        updatePaginationButtons();
+      });
+    });
+    
+    function loadProducts(page) {
+      // This would typically make an AJAX call to load products
+      // For now, we'll just update the display
+      console.log(`Loading page ${page} for collection ${collectionId}`);
+      
+      // Update URL without page reload
+      const url = new URL(window.location);
+      url.searchParams.set('page', page);
+      window.history.pushState({}, '', url);
+    }
+    
+    function updatePaginationButtons() {
+      const pageButtons = document.querySelectorAll('.page-btn');
+      const prevBtn = document.querySelector('.prev-btn');
+      const nextBtn = document.querySelector('.next-btn');
+      
+      pageButtons.forEach(btn => {
+        btn.classList.remove('active');
+        if (parseInt(btn.dataset.page) === currentPage) {
+          btn.classList.add('active');
+        }
+      });
+      
+      prevBtn.disabled = currentPage <= 1;
+      nextBtn.disabled = currentPage >= totalPages;
+    }
+  });
+</script> 

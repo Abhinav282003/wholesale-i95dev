@@ -1,0 +1,12 @@
+[[extensions]]
+name = "Quick Order List"
+handle = "quick-order-list"
+
+uid = "c64514bb-038b-eba8-428c-ac5eccad58d8a8d0ef7f"
+
+type = "theme_app_extension"
+
+[[extensions.targeting]]
+target = "section"
+module = "blocks/quick-order-link.liquid"
+templates = ["product"]

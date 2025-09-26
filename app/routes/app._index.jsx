@@ -9,10 +9,9 @@ import {
   BlockStack,
   Box,
   List,
-  Link,
   InlineStack,
 } from "@shopify/polaris";
-import { TitleBar, useAppBridge } from "@shopify/app-bridge-react";
+import { TitleBar } from "@shopify/app-bridge-react";
 import { authenticate } from "../shopify.server";
 
 export const loader = async ({ request }) => {
@@ -25,17 +24,14 @@ export const loader = async ({ request }) => {
   };
 };
 
-// No action needed here - form submissions are handled by apps.proxy.jsx
-
 export default function Index() {
   const fetcher = useFetcher();
   const navigate = useNavigate();
 
   // Trigger the wholesale page setup when this component mounts
   useEffect(() => {
-    // Navigate to wholesale page to trigger its loader (page creation)
-    // This ensures the page gets created when the app is installed/accessed
     fetcher.load("/app/wholesalepage");
+    fetcher.load("/app/create-quick-order");
   }, []);
 
   return (
@@ -60,30 +56,14 @@ export default function Index() {
                     i95Dev B2B Portal Features:
                   </Text>
                   <List>
-                    <List.Item>
-                      Automatic wholesale registration page creation
-                    </List.Item>
-                    <List.Item>
-                      Customer login protection for the registration form
-                    </List.Item>
-                    <List.Item>
-                      B2B company and customer management integration
-                    </List.Item>
-                    <List.Item>
-                      Form validation and error handling
-                    </List.Item>
-                    <List.Item>
-                      Automatic navigation menu integration
-                    </List.Item>
-                    <List.Item>
-                      Quick Order
-                    </List.Item>
-                    <List.Item>
-                      Wholesale Company Management
-                    </List.Item>
-                    <List.Item>
-                      Purchase Order Processing
-                    </List.Item>
+                    <List.Item>Automatic wholesale registration page creation</List.Item>
+                    <List.Item>Customer login protection for the registration form</List.Item>
+                    <List.Item>B2B company and customer management integration</List.Item>
+                    <List.Item>Form validation and error handling</List.Item>
+                    <List.Item>Automatic navigation menu integration</List.Item>
+                    <List.Item>Quick Order</List.Item>
+                    <List.Item>Wholesale Company Management</List.Item>
+                    <List.Item>Purchase Order Processing</List.Item>
                   </List>
                 </BlockStack>
                 <InlineStack gap="300">

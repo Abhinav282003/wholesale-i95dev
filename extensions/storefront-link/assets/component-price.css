@@ -1,0 +1,63 @@
+/* Component Price Styles */
+.component-price {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.component-price__regular {
+  font-size: 18px;
+  font-weight: 600;
+  color: #202223;
+  line-height: 1.2;
+}
+
+.component-price__sale {
+  font-size: 14px;
+  color: #6d7175;
+  text-decoration: line-through;
+  line-height: 1.2;
+}
+
+.component-price__compare {
+  font-size: 14px;
+  color: #6d7175;
+  line-height: 1.2;
+}
+
+.component-price__badge {
+  background: #d82c0d;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.component-price__unit {
+  font-size: 12px;
+  color: #6d7175;
+  font-weight: 400;
+}
+
+/* Price variants */
+.component-price--large .component-price__regular {
+  font-size: 24px;
+}
+
+.component-price--large .component-price__sale,
+.component-price--large .component-price__compare {
+  font-size: 18px;
+}
+
+.component-price--small .component-price__regular {
+  font-size: 14px;
+}
+
+.component-price--small .component-price__sale,
+.component-price--small .component-price__compare {
+  font-size: 12px;
+} 

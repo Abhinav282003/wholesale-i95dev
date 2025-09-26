@@ -1,0 +1,33 @@
+<!--<div class="quick-order">
+  {% if section.settings.title != blank %}
+    <h2>{{ section.settings.title }}</h2>
+  {% endif %}
+  <p>Quick order content goes here...</p>
+</div>-->
+
+<div class="quick-order-list-wrapper">
+  
+  {% render 'quick-order-list' %}
+</div>
+
+{% schema %}
+{
+  "name": "Quick Order Link",
+  "target": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title",
+      "default": "Quick Order Form"
+    },
+    {
+      "type": "text",
+      "id": "link_label",
+      "label": "Link Text",
+      "default": "Quick Order"
+    }
+  ]
+}
+{% endschema %}
+

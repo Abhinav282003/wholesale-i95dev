@@ -1,0 +1,150 @@
+<!-- Cart Quantity Sync Script -->
+<!-- Add this to your cart page/drawer to sync quantity removals with quick order page -->
+<script>
+(function() {
+  'use strict';
+  
+  console.log('🛒 Cart Quantity Sync initialized');
+  
+  // Function to notify quick order page about cart changes
+  function notifyQuickOrderPage(removedVariantIds) {
+    console.log('📢 Notifying quick order page about removed variants:', removedVariantIds);
+    
+    // Try multiple methods to reset quantities
+    if (window.resetVariantQuantity) {
+      removedVariantIds.forEach(variantId => {
+        window.resetVariantQuantity(variantId);
+      });
+    }
+    
+    if (window.handleCartItemRemoval) {
+      window.handleCartItemRemoval(removedVariantIds);
+    }
+    
+    // Dispatch custom events
+    removedVariantIds.forEach(variantId => {
+      document.dispatchEvent(new CustomEvent('cart:item:removed', {
+        detail: { variantId: variantId }
+      }));
+    });
+  }
+  
+  // Watch for remove button clicks
+  document.addEventListener('click', function(e) {
+    const removeBtn = e.target.closest('.cart-remove, .remove-item, [data-cart-remove], .cart__remove, .cart-item__remove');
+    
+    if (removeBtn) {
+      console.log('🗑️ Cart remove button clicked:', removeBtn);
+      
+      // Extract variant ID from various possible locations
+      let variantId = removeBtn.dataset.variantId || 
+                     removeBtn.dataset.lineId ||
+                     removeBtn.dataset.cartRemove ||
+                     removeBtn.dataset.id;
+      
+      // Try to find variant ID in parent elements
+      if (!variantId) {
+        const cartItem = removeBtn.closest('[data-variant-id], [data-line-id], [data-id], .cart-item, .cart__item');
+        if (cartItem) {
+          variantId = cartItem.dataset.variantId || 
+                     cartItem.dataset.lineId || 
+                     cartItem.dataset.id;
+        }
+      }
+      
+      // Try to extract from URLs or other attributes
+      if (!variantId && removeBtn.href) {
+        const urlMatch = removeBtn.href.match(/(\d+)/);
+        if (urlMatch) {
+          variantId = urlMatch[1];
+        }
+      }
+      
+      if (variantId) {
+        console.log(`🎯 Found variant ID for removal: ${variantId}`);
+        
+        // Small delay to allow cart update to process
+        setTimeout(function() {
+          notifyQuickOrderPage([variantId]);
+        }, 500);
+      } else {
+        console.warn('⚠️ Could not find variant ID for removed item');
+      }
+    }
+  });
+  
+  // Watch for Shopify cart updates
+  document.addEventListener('cart:updated', function(e) {
+    console.log('🛒 Shopify cart:updated event:', e.detail);
+    
+    if (window.persistentCart && window.persistentCart.handleCartUpdate) {
+      window.persistentCart.handleCartUpdate(e.detail);
+    }
+  });
+  
+  // Watch for cart quantity updates (when quantity is set to 0)
+  document.addEventListener('change', function(e) {
+    if (e.target.matches('.cart-item__quantity, .cart__quantity, [data-quantity-input]')) {
+      const quantityInput = e.target;
+      const newQuantity = parseInt(quantityInput.value) || 0;
+      
+      if (newQuantity === 0) {
+        console.log('📉 Quantity set to 0, finding variant ID...');
+        
+        let variantId = quantityInput.dataset.variantId || 
+                       quantityInput.dataset.lineId;
+        
+        if (!variantId) {
+          const cartItem = quantityInput.closest('[data-variant-id], [data-line-id], .cart-item, .cart__item');
+          if (cartItem) {
+            variantId = cartItem.dataset.variantId || cartItem.dataset.lineId;
+          }
+        }
+        
+        if (variantId) {
+          console.log(`🎯 Quantity set to 0 for variant: ${variantId}`);
+          setTimeout(function() {
+            notifyQuickOrderPage([variantId]);
+          }, 500);
+        }
+      }
+    }
+  });
+  
+  // For Ajax cart implementations, watch for fetch requests to cart endpoints
+  const originalFetch = window.fetch;
+  window.fetch = function(...args) {
+    const url = args[0];
+    
+    if (typeof url === 'string' && (url.includes('/cart/change') || url.includes('/cart/update'))) {
+      console.log('🌐 Cart API request detected:', url, args[1]);
+      
+      // If it's a removal (quantity: 0 or negative), try to extract variant ID
+      if (args[1] && args[1].body) {
+        try {
+          const body = typeof args[1].body === 'string' ? args[1].body : JSON.stringify(args[1].body);
+          
+          // Look for quantity: 0 patterns
+          const zeroQuantityMatch = body.match(/["']?quantity["']?\s*:\s*0/);
+          const variantIdMatch = body.match(/["']?(?:id|variant_id|line_id)["']?\s*:\s*["']?(\d+)["']?/);
+          
+          if (zeroQuantityMatch && variantIdMatch) {
+            const variantId = variantIdMatch[1];
+            console.log(`🎯 API removal detected for variant: ${variantId}`);
+            
+            setTimeout(function() {
+              notifyQuickOrderPage([variantId]);
+            }, 1000);
+          }
+        } catch (e) {
+          console.warn('Could not parse cart request body:', e);
+        }
+      }
+    }
+    
+    return originalFetch.apply(this, args);
+  };
+  
+  console.log('✅ Cart Quantity Sync fully initialized');
+})();
+</script>

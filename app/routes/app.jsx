@@ -8,8 +8,9 @@ import { authenticate } from "../shopify.server";
 export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 
 export const loader = async ({ request }) => {
-  await authenticate.admin(request);
+  const { admin, session } = await authenticate.admin(request);
 
+  // Just return the API key - page creation is handled in individual route loaders
   return { apiKey: process.env.SHOPIFY_API_KEY || "" };
 };
 
@@ -22,13 +23,10 @@ export default function App() {
         <Link to="/app" rel="home">
           Home
         </Link>
-        { /* <Link to="/app/quick-order">Quick Orders</Link> */}
-        
+        <Link to="/app/wholesalepage">Wholesale Management</Link>
+        <Link to="/app/create-quick-order">Quick Orders</Link>
         <Link to="/app/outbound-message">OutBound Message Queue</Link>
         <Link to="/app/inbound-message">InBound Message Queue</Link>
-        {/* <Link to="/app/wholesalepage">Wholesale Management</Link> */}
-
-        {/*<Link to="/app/additional">Additional page</Link>*/}
         <Link to="/app/settings">Settings</Link>
       </NavMenu>
       <Outlet />

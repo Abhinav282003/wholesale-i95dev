@@ -1,0 +1,138 @@
+{% comment %}
+  Product Card Snippet
+  Usage: {% render 'product-card', product: product %}
+  
+  Parameters:
+  - product: The product object to display
+  - show_vendor: Boolean to show/hide vendor (default: true)
+  - show_price: Boolean to show/hide price (default: true)
+{% endcomment %}
+
+<div class="product-card" data-product-id="{{ product.id }}">
+  <div class="product-card__image">
+    {% if product.featured_image %}
+      <img 
+        src="{{ product.featured_image | img_url: '300x300', crop: 'center' }}" 
+        alt="{{ product.title | escape }}"
+        loading="lazy"
+        class="product-card__img"
+      >
+    {% else %}
+      <img 
+        src="{{ 'no-image.png' | asset_url }}" 
+        alt="{{ product.title | escape }}"
+        loading="lazy"
+        class="product-card__img placeholder-image"
+      >
+    {% endif %}
+  </div>
+  
+  <div class="product-card__content">
+    <h3 class="product-card__title">
+      <a href="{{ product.url }}" class="product-card__link">
+        {{ product.title }}
+      </a>
+    </h3>
+    
+    {% if show_vendor != false and product.vendor %}
+      <p class="product-card__vendor">{{ product.vendor }}</p>
+    {% endif %}
+    
+    {% if show_price != false %}
+      <div class="product-card__price">
+        {% if product.has_only_default_variant %}
+          {% assign first_variant = product.variants.first %}
+          <span class="price" data-price="{{ first_variant.price }}">
+            {{ first_variant.price | money }}
+          </span>
+        {% else %}
+          <span class="price-range">Multiple Prices</span>
+        {% endif %}
+      </div>
+    {% endif %}
+    
+    <div class="product-card__actions">
+      <button 
+        type="button" 
+        class="btn btn--primary add-to-cart-btn"
+        data-product-id="{{ product.id }}"
+        {% unless product.available %}disabled{% endunless %}
+      >
+        {% if product.available %}
+          Add to Cart
+        {% else %}
+          Sold Out
+        {% endif %}
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .product-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+    transition: box-shadow 0.3s ease;
+  }
+  
+  .product-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  
+  .product-card__image {
+    margin-bottom: 12px;
+  }
+  
+  .product-card__img {
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+  }
+  
+  .product-card__title {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  
+  .product-card__link {
+    color: inherit;
+    text-decoration: none;
+  }
+  
+  .product-card__vendor {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    color: #666;
+  }
+  
+  .product-card__price {
+    margin-bottom: 12px;
+    font-weight: 600;
+    color: #333;
+  }
+  
+  .btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .btn--primary {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  .btn--primary:hover:not(:disabled) {
+    background-color: #0056b3;
+  }
+  
+  .btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+</style> 

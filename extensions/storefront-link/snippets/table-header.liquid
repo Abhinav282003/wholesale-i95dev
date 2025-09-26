@@ -1,0 +1,82 @@
+{% comment %}
+  Table Header Snippet
+  Usage: {% render 'table-header' %}
+{% endcomment %}
+
+<div class="table-header">
+  <div class="header-row">
+    <div class="header-cell image-column">Product</div>
+    <div class="header-cell product-column">Details</div>
+    <div class="header-cell price-column">Price</div>
+    <div class="header-cell quantity-column">Quantity</div>
+    <div class="header-cell total-column">Total</div>
+  </div>
+</div>
+
+<style>
+  .table-header {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-bottom: 3px solid #007bff;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  
+  .header-row {
+    display: grid;
+    grid-template-columns: 120px 2.5fr 1fr 1fr 1fr;
+    gap: 20px;
+    padding: 20px 24px;
+    font-weight: 700;
+    color: #495057;
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .header-cell {
+    padding: 0;
+    text-align: left;
+    display: flex;
+    align-items: center;
+  }
+  
+  .header-cell.price-column,
+  .header-cell.quantity-column,
+  .header-cell.total-column {
+    justify-content: center;
+    text-align: center;
+  }
+  
+  /* Mobile Responsive */
+  @media (max-width: 1024px) {
+    .header-row {
+      grid-template-columns: 100px 2fr 1fr 1fr 1fr;
+      gap: 16px;
+      padding: 16px 20px;
+      font-size: 14px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .header-row {
+      grid-template-columns: 80px 2fr 1fr 1fr;
+      gap: 12px;
+      padding: 16px;
+      font-size: 13px;
+    }
+    
+    .header-cell.total-column {
+      display: none;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .header-row {
+      grid-template-columns: 60px 1.5fr 1fr 1fr;
+      gap: 8px;
+      padding: 12px;
+      font-size: 12px;
+    }
+  }
+</style> 

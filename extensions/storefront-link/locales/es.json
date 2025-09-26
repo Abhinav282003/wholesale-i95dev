@@ -1,0 +1,25 @@
+{
+  "sections": {
+    "quick-order-list": {
+      "name": "Lista de pedido rápido",
+      "settings": {
+        "show_image": {
+          "label": "Mostrar imagen del producto"
+        },
+        "show_sku": {
+          "label": "Mostrar SKU"
+        }
+      }
+    },
+    "all": {
+      "colors": {
+        "label": "Esquema de colores"
+      },
+      "padding": {
+        "section_padding_heading": "Configuración de relleno",
+        "padding_top": "Relleno superior",
+        "padding_bottom": "Relleno inferior"
+      }
+    }
+  }
+} 

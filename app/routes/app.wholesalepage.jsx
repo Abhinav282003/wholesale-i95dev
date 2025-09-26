@@ -42,7 +42,7 @@ export const loader = async ({ request }) => {
 
   const pagesData = await pagesResponse.json();
   const existingPage = pagesData.data?.pages?.edges?.find(
-    edge => edge.node.title === "Wholesale Registration" || edge.node.handle === "quick-order"
+    edge => edge.node.title === "Wholesale Registration" || edge.node.handle === "wholesale-registration"
   )?.node;
 
   // If page doesn't exist, create it automatically
@@ -69,7 +69,7 @@ export const loader = async ({ request }) => {
           variables: {
             page: {
               title: "Wholesale Registration",
-              handle: `quick-order-${Math.random().toString(36).substring(2, 15)}`,
+              handle: "wholesale-registration",
               body: `
                 <div id="protected-page-content">
                   <div id="login-required" style="text-align: center; padding: 40px;">

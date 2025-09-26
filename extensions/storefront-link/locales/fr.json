@@ -1,0 +1,25 @@
+{
+  "sections": {
+    "quick-order-list": {
+      "name": "Liste de commande rapide",
+      "settings": {
+        "show_image": {
+          "label": "Afficher l'image du produit"
+        },
+        "show_sku": {
+          "label": "Afficher la référence"
+        }
+      }
+    },
+    "all": {
+      "colors": {
+        "label": "Schéma de couleurs"
+      },
+      "padding": {
+        "section_padding_heading": "Paramètres de remplissage",
+        "padding_top": "Remplissage supérieur",
+        "padding_bottom": "Remplissage inférieur"
+      }
+    }
+  }
+} 

@@ -2,7 +2,7 @@
 
 client_id = "cc6261cee5ce49a98e6d6d84f4d4e432"
 name = "Wholesale I95dev"
-application_url = "https://release-purchasing-wild-adventures.trycloudflare.com"
+application_url = "https://mothers-affiliated-rfc-arrives.trycloudflare.com"
 embedded = true
 handle = "wholesale-i95dev"
 
@@ -13,64 +13,64 @@ automatically_update_urls_on_dev = true
 api_version = "2025-07"
 
   [[webhooks.subscriptions]]
+  topics = [ "orders/create" ]
+  uri = "/webhooks/orders/create"
+
+  [[webhooks.subscriptions]]
   topics = [ "products/create" ]
   uri = "/webhooks/products/create"
-
-  [[webhooks.subscriptions]]
-  topics = [ "products/update" ]
-  uri = "/webhooks/products/update"
-
-  [[webhooks.subscriptions]]
-  topics = [ "products/delete" ]
-  uri = "/webhooks/products/delete"
 
   [[webhooks.subscriptions]]
   topics = [ "customers/create" ]
   uri = "/webhooks/customers/create"
 
   [[webhooks.subscriptions]]
-  topics = [ "customers/update" ]
-  uri = "/webhooks/customers/update"
-
-  [[webhooks.subscriptions]]
   topics = [ "companies/create" ]
   uri = "/webhooks/companies/create"
 
   [[webhooks.subscriptions]]
-  topics = [ "companies/update" ]
-  uri = "/webhooks/companies/update"
-
-  [[webhooks.subscriptions]]
-  topics = [ "orders/create" ]
-  uri = "/webhooks/orders/create"
+  topics = [ "products/delete" ]
+  uri = "/webhooks/products/delete"
 
   [[webhooks.subscriptions]]
   topics = [ "orders/updated" ]
   uri = "/webhooks/orders/update"
 
   [[webhooks.subscriptions]]
-  topics = [ "app/uninstalled" ]
-  uri = "/webhooks/app/uninstalled"
+  topics = [ "customers/update" ]
+  uri = "/webhooks/customers/update"
 
   [[webhooks.subscriptions]]
   topics = [ "app/scopes_update" ]
   uri = "/webhooks/app/scopes_update"
 
+  [[webhooks.subscriptions]]
+  topics = [ "companies/update" ]
+  uri = "/webhooks/companies/update"
+
+  [[webhooks.subscriptions]]
+  topics = [ "app/uninstalled" ]
+  uri = "/webhooks/app/uninstalled"
+
+  [[webhooks.subscriptions]]
+  topics = [ "products/update" ]
+  uri = "/webhooks/products/update"
+
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "read_customers,write_customers,read_companies,write_companies,read_orders,write_orders,read_products,write_products,write_discounts,write_content,write_online_store_navigation"
-
-[app_proxy]
-url = "https://release-purchasing-wild-adventures.trycloudflare.com/apps/proxy"
-subpath = "proxy"
-prefix = "apps"
+scopes = "read_companies,read_customers,read_orders,read_products,write_companies,write_content,write_customers,write_discounts,write_online_store_navigation,write_orders,write_products"
 
 [auth]
 redirect_urls = [
-  "https://release-purchasing-wild-adventures.trycloudflare.com/auth/callback",
-  "https://release-purchasing-wild-adventures.trycloudflare.com/auth/shopify/callback",
-  "https://release-purchasing-wild-adventures.trycloudflare.com/api/auth/callback"
+  "https://mothers-affiliated-rfc-arrives.trycloudflare.com/auth/callback",
+  "https://mothers-affiliated-rfc-arrives.trycloudflare.com/auth/shopify/callback",
+  "https://mothers-affiliated-rfc-arrives.trycloudflare.com/api/auth/callback"
 ]
+
+[app_proxy]
+url = "https://mothers-affiliated-rfc-arrives.trycloudflare.com/apps/proxy"
+subpath = "proxy"
+prefix = "apps"
 
 [pos]
 embedded = false

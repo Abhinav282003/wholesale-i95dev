@@ -1,0 +1,71 @@
+{% comment %}
+  Cart Summary Snippet - Displays order totals
+  Usage: {% render 'cart-summary' %}
+{% endcomment %}
+
+<!-- Order Summary -->
+<div class="order-summary">
+  <div class="summary-content">
+    <div class="subtotal-row">
+      <span class="subtotal-label">Subtotal:</span>
+      <span class="subtotal-amount" id="subtotal-amount">Rs 0.00</span>
+    </div>
+  </div>
+</div>
+
+<style>
+  .order-summary {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+  
+  .summary-content {
+    max-width: 400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  .subtotal-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 2px solid #000000ff;
+    font-size: 18px;
+    font-weight: 600;
+    min-width: 450px;
+  }
+  
+  .subtotal-label {
+    color: #495057;
+    font-weight: 600;
+  }
+  
+  .subtotal-amount {
+    color: #000000ff;
+    font-weight: 700;
+    font-size: 20px;
+  }
+  
+  @media (max-width: 768px) {
+    .order-summary {
+      padding: 16px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+    }
+    
+    .subtotal-row {
+      font-size: 16px;
+      padding: 12px 0;
+    }
+    
+    .subtotal-amount {
+      font-size: 18px;
+    }
+  }
+</style> 

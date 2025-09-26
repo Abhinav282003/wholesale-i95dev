@@ -1,0 +1,140 @@
+<!-- Enhanced Cart Sync for Quick Order -->
+<script>
+(function() {
+  'use strict';
+  
+  console.log('🔄 Enhanced cart sync initialized');
+  
+  // Function to reset quick order quantities
+  function resetQuickOrderQuantity(variantId) {
+    console.log(`🔄 Attempting to reset quantity for variant: ${variantId}`);
+    
+    // Method 1: Use global function if available
+    if (window.resetVariantQuantity && typeof window.resetVariantQuantity === 'function') {
+      window.resetVariantQuantity(variantId);
+      return;
+    }
+    
+    // Method 2: Use persistent cart instance
+    if (window.persistentCart && typeof window.persistentCart.resetVariantQuantity === 'function') {
+      window.persistentCart.resetVariantQuantity(variantId);
+      return;
+    }
+    
+    // Method 3: Post message for cross-frame communication
+    if (window.parent !== window) {
+      window.parent.postMessage({
+        type: 'quickOrderReset',
+        variantId: variantId,
+        timestamp: Date.now()
+      }, '*');
+    }
+    
+    // Method 4: Use localStorage as fallback
+    try {
+      localStorage.setItem('quickOrderReset', JSON.stringify({
+        variantId: variantId,
+        timestamp: Date.now()
+      }));
+      
+      // Dispatch storage event manually for same-page communication
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: 'quickOrderReset',
+        newValue: JSON.stringify({ variantId, timestamp: Date.now() })
+      }));
+    } catch (e) {
+      console.warn('Could not use localStorage for cart sync');
+    }
+  }
+
+  // Enhanced cart event handling
+  document.addEventListener('DOMContentLoaded', function() {
+    
+    // Listen for standard Shopify cart events
+    document.addEventListener('cart:updated', function(event) {
+      console.log('🛒 Cart updated event received:', event.detail);
+      
+      if (window.persistentCart && typeof window.persistentCart.handleCartUpdate === 'function') {
+        window.persistentCart.handleCartUpdate(event.detail);
+      }
+      
+      // Handle removed items
+      if (event.detail && event.detail.removedItems) {
+        event.detail.removedItems.forEach(function(item) {
+          resetQuickOrderQuantity(item.variant_id || item.id);
+        });
+      }
+    });
+    
+    // Listen for cart item removal events
+    document.addEventListener('cart:item:removed', function(event) {
+      console.log('🗑️ Cart item removed event received:', event.detail);
+      
+      if (event.detail && event.detail.variantId) {
+        resetQuickOrderQuantity(event.detail.variantId);
+      }
+    });
+    
+    // Listen for remove button clicks
+    document.addEventListener('click', function(event) {
+      const removeSelectors = [
+        '.cart__remove', '.remove', '.btn--remove', '.cart-item__remove',
+        '[data-cart-remove]', '.remove-item', '[aria-label*="remove" i]',
+        '.cart-remove', '.remove-from-cart', '[data-line-item-remove]',
+        '.cart-item-remove', '.line-item-remove'
+      ];
+      
+      if (removeSelectors.some(selector => event.target.matches(selector))) {
+        console.log('🗑️ Remove button clicked:', event.target);
+        
+        // Extract variant ID from various sources
+        const variantId = event.target.dataset.variantId ||
+                         event.target.dataset.lineId ||
+                         event.target.closest('[data-variant-id]')?.dataset.variantId ||
+                         event.target.closest('[data-line-id]')?.dataset.lineId ||
+                         event.target.closest('.cart-item')?.dataset.variantId ||
+                         event.target.closest('form')?.querySelector('input[name*="updates["]')?.name.match(/updates\[(\d+)\]/)?.[1];
+        
+        if (variantId) {
+          setTimeout(() => resetQuickOrderQuantity(variantId), 200);
+        }
+      }
+    });
+    
+    // Listen for quantity changes to 0
+    document.addEventListener('change', function(event) {
+      if (event.target.matches('input[name*="updates["]') && event.target.value === '0') {
+        const match = event.target.name.match(/updates\[(\d+)\]/);
+        if (match) {
+          console.log(`🗑️ Quantity changed to 0 for variant: ${match[1]}`);
+          setTimeout(() => resetQuickOrderQuantity(match[1]), 100);
+        }
+      }
+    });
+    
+    // Monitor cart form submissions
+    document.addEventListener('submit', function(event) {
+      if (event.target.matches('form[action*="/cart"]')) {
+        console.log('🛒 Cart form submitted');
+        
+        // Check for items being set to 0 quantity
+        const inputs = event.target.querySelectorAll('input[name*="updates["]');
+        inputs.forEach(function(input) {
+          if (input.value === '0') {
+            const match = input.name.match(/updates\[(\d+)\]/);
+            if (match) {
+              setTimeout(() => resetQuickOrderQuantity(match[1]), 300);
+            }
+          }
+        });
+      }
+    });
+    
+    console.log('✅ Enhanced cart sync ready');
+  });
+  
+  // Expose function globally
+  window.resetQuickOrderQuantity = resetQuickOrderQuantity;
+  
+})();
+</script>
