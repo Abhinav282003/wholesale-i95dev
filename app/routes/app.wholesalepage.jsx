@@ -70,7 +70,7 @@ export const loader = async ({ request }) => {
             page: {
               title: "Wholesale Registration",
               handle: "wholesale-registration",
-              body: `
+            body: `
                 <div id="protected-page-content">
                   <div id="login-required" style="text-align: center; padding: 40px;">
                     <p>Please login to view the content</p>
@@ -78,56 +78,108 @@ export const loader = async ({ request }) => {
                   </div>
                   
                  <div id="protected-content" style="display: none; text-align: center; padding: 40px;">
-  <div style="max-width: 500px; margin: 0 auto; text-align: left;">
-    <h2 style="margin-bottom: 20px;">Company Information</h2>
+  <div style="max-width: 800px; margin: 0 auto; text-align: left;">
     <form id="wholesaleForm" method="post" action="/apps/proxy" onsubmit="return submitForm(event)">
-      <div style="margin-bottom: 16px;">
-        <label>Company Name *</label>
-        <input type="text" name="companyName" id="companyName" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" required minlength="2" maxlength="100" />
-        <div id="companyName-error" class="error-message"></div>
+      <!-- 1. First Name + Last Name -->
+      <div class="form-row">
+        <div class="form-field">
+          <label>First Name <span style="color: red;">*</span></label>
+          <input type="text" name="firstName" id="firstName" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" required minlength="2" maxlength="50" pattern="[a-zA-Z\\s]+" />
+          <div id="firstName-error" class="error-message"></div>
+        </div>
+        <div class="form-field">
+          <label>Last Name <span style="color: red;">*</span></label>
+          <input type="text" name="lastName" id="lastName" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" required minlength="2" maxlength="50" pattern="[a-zA-Z\\s]+" />
+          <div id="lastName-error" class="error-message"></div>
+        </div>
       </div>
 
-      <div style="margin-bottom: 16px;">
-        <label>First Name *</label>
-        <input type="text" name="firstName" id="firstName" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" required minlength="2" maxlength="50" pattern="[a-zA-Z\\s]+" />
-        <div id="firstName-error" class="error-message"></div>
+      <!-- 2. User Email + Phone Number -->
+      <div class="form-row">
+        <div class="form-field">
+          <label>User Email <span style="color: red;">*</span></label>
+          <input type="email" name="userEmail" id="userEmail" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" required maxlength="100" />
+          <div id="userEmail-error" class="error-message"></div>
+        </div>
+        <div class="form-field">
+          <label>Phone Number <span style="color: red;">*</span></label>
+          <input type="tel" name="phone" id="phone" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" required pattern="[0-9\\+\\-\\(\\)\\s]+" maxlength="15" />
+          <div id="phone-error" class="error-message"></div>
+        </div>
       </div>
 
-      <div style="margin-bottom: 16px;">
-        <label>Last Name *</label>
-        <input type="text" name="lastName" id="lastName" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" required minlength="2" maxlength="50" pattern="[a-zA-Z\\s]+" />
-
-        <div id="lastName-error" class="error-message"></div>
+      <!-- 3. Company Name + Company Email -->
+      <div class="form-row">
+        <div class="form-field">
+          <label>Company Name <span style="color: red;">*</span></label>
+          <input type="text" name="companyName" id="companyName" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" required minlength="2" maxlength="100" />
+          <div id="companyName-error" class="error-message"></div>
+        </div>
+        <div class="form-field">
+          <label>Company Email <span style="color: red;">*</span></label>
+          <input type="email" name="companyEmail" id="companyEmail" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" required maxlength="100" />
+          <div id="companyEmail-error" class="error-message"></div>
+        </div>
       </div>
 
-      <div style="margin-bottom: 16px;">
-        <label>Location</label>
-        <input type="text" name="location" id="location" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" maxlength="100" />
-        <div id="location-error" class="error-message"></div>
+      <!-- 4. Address Line 1 + Address Line 2 -->
+      <div class="form-row">
+        <div class="form-field">
+          <label>Address Line 1 <span style="color: red;">*</span></label>
+          <input type="text" name="address1" id="address1" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" required maxlength="191" />
+          <div id="address1-error" class="error-message"></div>
+        </div>
+        <div class="form-field">
+          <label>Address Line 2</label>
+          <input type="text" name="address2" id="address2" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" maxlength="191" />
+          <div id="address2-error" class="error-message"></div>
+        </div>
       </div>
 
-      <div style="margin-bottom: 16px;">
-        <label>Tax ID</label>
-        <input type="text" name="taxId" id="taxId" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" pattern="[0-9\\-]+" maxlength="20" />
-        <div id="taxId-error" class="error-message"></div>
+      <!-- 5. Country + State -->
+      <div class="form-row">
+        <div class="form-field">
+          <label>Country <span style="color: red;">*</span></label>
+          <select name="country" id="country" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background: #fff;" required>
+            <option value="" selected disabled>Loading countries…</option>
+          </select>
+          <div id="country-error" class="error-message"></div>
+        </div>
+        <div class="form-field">
+          <label>State / Province <span style="color: red;">*</span></label>
+          <select name="state" id="state" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background: #fff;" required disabled>
+            <option value="" selected>Select a country first</option>
+          </select>
+          <div id="state-error" class="error-message"></div>
+        </div>
       </div>
 
-      <div style="margin-bottom: 16px;">
-        <label>Phone Number</label>
-        <input type="tel" name="phone" id="phone" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" pattern="[0-9\\+\\-\\(\\)\\s]+" maxlength="15" />
-        <div id="phone-error" class="error-message"></div>
+      <!-- 6. City + ZIP Code -->
+      <div class="form-row">
+        <div class="form-field">
+          <label>City <span style="color: red;">*</span></label>
+          <input type="text" name="city" id="city" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" required maxlength="191" />
+          <div id="city-error" class="error-message"></div>
+        </div>
+        <div class="form-field">
+          <label>ZIP Code <span style="color: red;">*</span></label>
+          <input type="text" name="zip_code" id="zip_code" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" required maxlength="191" />
+          <div id="zip_code-error" class="error-message"></div>
+        </div>
       </div>
 
-      <div style="margin-bottom: 16px;">
-        <label>Company Email *</label>
-        <input type="email" name="companyEmail" id="companyEmail" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;"  required maxlength="100"  />
-        <div id="companyEmail-error" class="error-message"></div>
-      </div>
-
-      <div style="margin-bottom: 16px;">
-        <label>User Email *</label>
-        <input type="email" name="userEmail" id="userEmail" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" required maxlength="100" />
-        <div id="userEmail-error" class="error-message"></div>
+      <!-- 7. Location + Tax ID -->
+      <div class="form-row">
+        <div class="form-field">
+          <label>Location <span style="color: red;">*</span></label>
+          <input type="text" name="location" id="location" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" required maxlength="100" />
+          <div id="location-error" class="error-message"></div>
+        </div>
+        <div class="form-field">
+          <label>Tax ID</label>
+          <input type="text" name="taxId" id="taxId" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" pattern="[0-9\\-]+" maxlength="20" />
+          <div id="taxId-error" class="error-message"></div>
+        </div>
       </div>
 
       <button type="submit" id="submitBtn" class="submit-btn">
@@ -138,6 +190,35 @@ export const loader = async ({ request }) => {
 </div>
 
                 <style>
+                  /* Form row layout for side-by-side fields */
+                  .form-row {
+                    display: flex;
+                    gap: 16px;
+                    margin-bottom: 16px;
+                  }
+                  
+                  .form-field {
+                    flex: 1;
+                  }
+                  
+                  .form-field label {
+                    display: block;
+                    margin-bottom: 4px;
+                    font-weight: 500;
+                  }
+                  
+                  /* Responsive design - stack fields on smaller screens */
+                  @media (max-width: 768px) {
+                    .form-row {
+                      flex-direction: column;
+                      gap: 0;
+                    }
+                    
+                    .form-field {
+                      margin-bottom: 16px;
+                    }
+                  }
+                  
                   .error-message {
                     color: #e74c3c;
                     font-size: 12px;
@@ -216,9 +297,130 @@ export const loader = async ({ request }) => {
                     background: #ccc;
                     cursor: not-allowed;
                   }
+                  
+                  /* Country/State picker styles */
+                  .flag {
+                    width: 20px;
+                    height: 14px;
+                    object-fit: cover;
+                    border-radius: 2px;
+                    vertical-align: text-bottom;
+                    margin-right: 6px;
+                  }
+                  
+                  /* Info display styles removed - no longer needed */
                 </style>
 
                 <script>
+                  // Country and State Data URLs
+                  const COUNTRIES_URL = 'https://cdn.jsdelivr.net/gh/dr5hn/countries-states-cities-database@master/json/countries.json';
+                  const STATES_URL = 'https://cdn.jsdelivr.net/gh/dr5hn/countries-states-cities-database@master/json/states.json';
+                  
+                  // Global variables for country/state data
+                  let countries = [];
+                  let states = [];
+                  let statesByCountry = new Map();
+                  
+                  // Country/State picker functions
+                  function flagImg(iso2) {
+                    if (!iso2) return '';
+                    const lower = iso2.toLowerCase();
+                    return '<img class="flag" alt="' + iso2 + ' flag" src="https://flagcdn.com/w20/' + lower + '.png" srcset="https://flagcdn.com/w40/' + lower + '.png 2x">';
+                  }
+                  
+                  function populateCountries() {
+                    const countrySel = document.getElementById('country');
+                    const sorted = countries.slice().sort(function(a, b) { return a.name.localeCompare(b.name); });
+                    countrySel.innerHTML = '<option value="" disabled selected>Select a country</option>';
+                    
+                    for (let i = 0; i < sorted.length; i++) {
+                      const c = sorted[i];
+                      const opt = document.createElement('option');
+                      opt.value = c.iso2;
+                      opt.innerHTML = flagImg(c.iso2) + ' ' + c.name + ' (' + c.iso2 + ')';
+                      countrySel.appendChild(opt);
+                    }
+                    countrySel.disabled = false;
+                  }
+                  
+                  function populateStates(countryIso2) {
+                    const stateSel = document.getElementById('state');
+                    stateSel.innerHTML = '';
+                    const list = statesByCountry.get(countryIso2) || [];
+                    
+                    if (!list.length) {
+                      stateSel.innerHTML = '<option value="" selected>No states found</option>';
+                      stateSel.disabled = true;
+                      return;
+                    }
+                    
+                    const sorted = list.slice().sort(function(a, b) { return a.name.localeCompare(b.name); });
+                    const ph = document.createElement('option');
+                    ph.value = '';
+                    ph.selected = true;
+                    ph.textContent = 'Select a state/province';
+                    stateSel.appendChild(ph);
+                    
+                    for (let i = 0; i < sorted.length; i++) {
+                      const s = sorted[i];
+                      const code = s.state_code || s.iso2;
+                      const opt = document.createElement('option');
+                      opt.value = code;
+                      opt.textContent = s.name + ' (' + code + ')';
+                      stateSel.appendChild(opt);
+                    }
+                    
+                    stateSel.disabled = false;
+                  }
+                  
+                  // Country details display removed - functionality maintained
+                  
+                  // State details display removed - functionality maintained
+                  
+                  // Initialize country/state data
+                  async function initializeCountryStateData() {
+                    try {
+                      const responses = await Promise.all([
+                        fetch(COUNTRIES_URL),
+                        fetch(STATES_URL)
+                      ]);
+                      
+                      countries = await responses[0].json();
+                      states = await responses[1].json();
+                      
+                      // Build states by country map
+                      statesByCountry = new Map();
+                      for (let i = 0; i < states.length; i++) {
+                        const s = states[i];
+                        const code = s.country_code;
+                        if (!statesByCountry.has(code)) {
+                          statesByCountry.set(code, []);
+                        }
+                        statesByCountry.get(code).push(s);
+                      }
+                      
+                      populateCountries();
+                      
+                      // Add event listeners
+                      const countrySel = document.getElementById('country');
+                      const stateSel = document.getElementById('state');
+                      
+                      countrySel.addEventListener('change', function() {
+                        const iso2 = countrySel.value;
+                        populateStates(iso2);
+                      });
+                      
+                      // State selection listener removed - no display needed
+                      
+                    } catch (err) {
+                      console.error('Failed to load country/state data:', err);
+                      const countrySel = document.getElementById('country');
+                      const stateSel = document.getElementById('state');
+                      countrySel.innerHTML = '<option value="" selected disabled>Failed to load</option>';
+                      stateSel.innerHTML = '<option value="" selected disabled>Failed to load</option>';
+                    }
+                  }
+                  
                   // Toast notification functions
                   function showToast(message, type, duration) {
                     type = type || 'info';
@@ -426,6 +628,57 @@ export const loader = async ({ request }) => {
                       userEmail.classList.add('success');
                     }
                     
+                    // Address1 validation (required)
+                    const address1 = document.getElementById('address1');
+                    if (!address1.value.trim()) {
+                      showError('address1', 'Address Line 1 is required');
+                      isValid = false;
+                    } else if (address1.value.trim().length > 191) {
+                      showError('address1', 'Address Line 1 must not exceed 191 characters');
+                      isValid = false;
+                    } else {
+                      address1.classList.add('success');
+                    }
+                    
+                    // Address2 validation (optional)
+                    const address2 = document.getElementById('address2');
+                    if (address2.value.trim() && address2.value.trim().length > 191) {
+                      showError('address2', 'Address Line 2 must not exceed 191 characters');
+                      isValid = false;
+                    } else if (address2.value.trim()) {
+                      address2.classList.add('success');
+                    }
+                    
+                    // Country validation (optional) - now using select dropdown
+                    const country = document.getElementById('country');
+                    if (country.value && country.value.length > 0) {
+                      country.classList.add('success');
+                    }
+                    
+                    // State validation (optional) - now using select dropdown
+                    const state = document.getElementById('state');
+                    if (state.value && state.value.length > 0) {
+                      state.classList.add('success');
+                    }
+                    
+                    // City validation (optional)
+                    const city = document.getElementById('city');
+                    if (city.value.trim() && city.value.trim().length > 191) {
+                      showError('city', 'City must not exceed 191 characters');
+                      isValid = false;
+                    } else if (city.value.trim()) {
+                      city.classList.add('success');
+                    }
+                    
+                    // ZIP Code validation (optional)
+                    const zipCode = document.getElementById('zip_code');
+                    if (zipCode.value.trim() && zipCode.value.trim().length > 191) {
+                      showError('zip_code', 'ZIP Code must not exceed 191 characters');
+                      isValid = false;
+                    } else if (zipCode.value.trim()) {
+                      zipCode.classList.add('success');
+                    }
+                    
                     return isValid;
                   }
                   
@@ -439,9 +692,21 @@ export const loader = async ({ request }) => {
                   
                   // Real-time validation on blur
                   document.addEventListener('DOMContentLoaded', function() {
+                    // Initialize country/state data
+                    initializeCountryStateData();
+                    
+                    // Add blur validation for input fields
                     const inputs = document.querySelectorAll('input');
                     inputs.forEach(input => {
                       input.addEventListener('blur', function() {
+                        validateSingleField(this);
+                      });
+                    });
+                    
+                    // Add change validation for select fields
+                    const selects = document.querySelectorAll('select');
+                    selects.forEach(select => {
+                      select.addEventListener('change', function() {
                         validateSingleField(this);
                       });
                     });
@@ -508,6 +773,32 @@ export const loader = async ({ request }) => {
                         } else if (field.value.trim() && field.value.trim().length > 100) {
                           showError(fieldId, 'Email must not exceed 100 characters');
                         } else if (field.value.trim()) {
+                          field.classList.add('success');
+                        }
+                        break;
+                        
+                      case 'address1':
+                        if (field.value.trim() && field.value.trim().length > 191) {
+                          showError(fieldId, 'Address Line 1 must not exceed 191 characters');
+                        } else if (field.value.trim()) {
+                          field.classList.add('success');
+                        }
+                        break;
+                        
+                      case 'address2':
+                      case 'city':
+                      case 'zip_code':
+                        if (field.value.trim() && field.value.trim().length > 191) {
+                          showError(fieldId, 'Field must not exceed 191 characters');
+                        } else if (field.value.trim()) {
+                          field.classList.add('success');
+                        }
+                        break;
+                        
+                      case 'country':
+                      case 'state':
+                        // For select elements, just check if a value is selected
+                        if (field.value && field.value.length > 0) {
                           field.classList.add('success');
                         }
                         break;
@@ -774,6 +1065,7 @@ export const action = async ({ request }) => {
     lastName: formData.get("lastName"),
     email: formData.get("userEmail"),
     phone: formData.get("phone"),
+    tags: ["wholesale"],
   };
 
   const customerResponse = await admin.graphql(
@@ -783,6 +1075,7 @@ export const action = async ({ request }) => {
           customer {
             id
             email
+            tags
           }
           userErrors {
             field

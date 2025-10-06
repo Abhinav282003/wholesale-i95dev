@@ -2,7 +2,7 @@
 
 client_id = "cc6261cee5ce49a98e6d6d84f4d4e432"
 name = "Wholesale I95dev"
-application_url = "https://mothers-affiliated-rfc-arrives.trycloudflare.com"
+application_url = "https://observation-craig-gtk-theme.trycloudflare.com"
 embedded = true
 handle = "wholesale-i95dev"
 
@@ -58,17 +58,18 @@ api_version = "2025-07"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "read_companies,read_customers,read_orders,read_products,write_companies,write_content,write_customers,write_discounts,write_online_store_navigation,write_orders,write_products"
+scopes="read_companies,read_customers,read_orders,read_products,read_script_tags,read_themes,unauthenticated_read_product_listings,write_companies,write_content,write_customers,write_discounts,write_online_store_navigation,write_orders,write_products,write_script_tags,write_themes"
+
 
 [auth]
 redirect_urls = [
-  "https://mothers-affiliated-rfc-arrives.trycloudflare.com/auth/callback",
-  "https://mothers-affiliated-rfc-arrives.trycloudflare.com/auth/shopify/callback",
-  "https://mothers-affiliated-rfc-arrives.trycloudflare.com/api/auth/callback"
+  "https://observation-craig-gtk-theme.trycloudflare.com/auth/callback",
+  "https://observation-craig-gtk-theme.trycloudflare.com/auth/shopify/callback",
+  "https://observation-craig-gtk-theme.trycloudflare.com/api/auth/callback"
 ]
 
 [app_proxy]
-url = "https://mothers-affiliated-rfc-arrives.trycloudflare.com/apps/proxy"
+url = "https://observation-craig-gtk-theme.trycloudflare.com/apps/proxy"
 subpath = "proxy"
 prefix = "apps"
 

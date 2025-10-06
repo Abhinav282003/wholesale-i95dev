@@ -31,7 +31,7 @@ export default function Index() {
   // Trigger the wholesale page setup when this component mounts
   useEffect(() => {
     fetcher.load("/app/wholesalepage");
-    fetcher.load("/app/create-quick-order");
+    fetcher.load("/app/metafielddefinition");
   }, []);
 
   return (
