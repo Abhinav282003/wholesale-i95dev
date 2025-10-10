@@ -2,7 +2,7 @@
 
 client_id = "cc6261cee5ce49a98e6d6d84f4d4e432"
 name = "Wholesale I95dev"
-application_url = "https://observation-craig-gtk-theme.trycloudflare.com"
+application_url = "https://stick-psychiatry-joyce-dean.trycloudflare.com"
 embedded = true
 handle = "wholesale-i95dev"
 
@@ -12,49 +12,50 @@ automatically_update_urls_on_dev = true
 [webhooks]
 api_version = "2025-07"
 
-  [[webhooks.subscriptions]]
+[[webhooks.subscriptions]]
   topics = [ "orders/create" ]
   uri = "/webhooks/orders/create"
 
-  [[webhooks.subscriptions]]
+[[webhooks.subscriptions]]
   topics = [ "products/create" ]
   uri = "/webhooks/products/create"
 
-  [[webhooks.subscriptions]]
+[[webhooks.subscriptions]]
   topics = [ "customers/create" ]
   uri = "/webhooks/customers/create"
 
-  [[webhooks.subscriptions]]
+[[webhooks.subscriptions]]
   topics = [ "companies/create" ]
   uri = "/webhooks/companies/create"
 
-  [[webhooks.subscriptions]]
+[[webhooks.subscriptions]]
   topics = [ "products/delete" ]
   uri = "/webhooks/products/delete"
 
-  [[webhooks.subscriptions]]
+[[webhooks.subscriptions]]
   topics = [ "orders/updated" ]
   uri = "/webhooks/orders/update"
 
-  [[webhooks.subscriptions]]
+[[webhooks.subscriptions]]
   topics = [ "customers/update" ]
   uri = "/webhooks/customers/update"
 
-  [[webhooks.subscriptions]]
+[[webhooks.subscriptions]]
   topics = [ "app/scopes_update" ]
   uri = "/webhooks/app/scopes_update"
 
-  [[webhooks.subscriptions]]
-  topics = [ "companies/update" ]
-  uri = "/webhooks/companies/update"
+[[webhooks.subscriptions]]
+   topics = [ "companies/update" ]
+   uri = "/webhooks/companies/update"
 
-  [[webhooks.subscriptions]]
+[[webhooks.subscriptions]]
   topics = [ "app/uninstalled" ]
   uri = "/webhooks/app/uninstalled"
 
-  [[webhooks.subscriptions]]
+[[webhooks.subscriptions]]
   topics = [ "products/update" ]
   uri = "/webhooks/products/update"
+
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
@@ -63,13 +64,13 @@ scopes="read_companies,read_customers,read_orders,read_products,read_script_tags
 
 [auth]
 redirect_urls = [
-  "https://observation-craig-gtk-theme.trycloudflare.com/auth/callback",
-  "https://observation-craig-gtk-theme.trycloudflare.com/auth/shopify/callback",
-  "https://observation-craig-gtk-theme.trycloudflare.com/api/auth/callback"
+  "https://stick-psychiatry-joyce-dean.trycloudflare.com/auth/callback",
+  "https://stick-psychiatry-joyce-dean.trycloudflare.com/auth/shopify/callback",
+  "https://stick-psychiatry-joyce-dean.trycloudflare.com/api/auth/callback"
 ]
 
 [app_proxy]
-url = "https://observation-craig-gtk-theme.trycloudflare.com/apps/proxy"
+url = "https://stick-psychiatry-joyce-dean.trycloudflare.com/apps/proxy"
 subpath = "proxy"
 prefix = "apps"
 

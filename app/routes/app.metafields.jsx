@@ -47,7 +47,7 @@ export const loader = async ({ request }) => {
           node {
             id
             name
-            metafields(first: 20, namespace: "custom", keys: ["companyEmail"]) {
+            metafields(first: 20, namespace: "custom", keys: ["companyEmail", "targetCompanyId"]) {
               edges {
                 node {
                   id
@@ -138,6 +138,64 @@ export const action = async ({ request }) => {
     };
   }
 
+  if (actionType === "setTargetCompanyId") {
+    const entityId = body.get("entityId");
+    const targetCompanyIdValue = (body.get("targetCompanyIdValue") || "").toString().trim();
+
+    // Basic integer validation
+    const isValidInteger = /^\d+$/.test(targetCompanyIdValue);
+    if (!entityId || !isValidInteger) {
+      return {
+        success: false,
+        errors: [{ message: "Please select a company and enter a valid integer for target company ID." }],
+      };
+    }
+
+    const resp = await admin.graphql(
+      `
+      mutation SetMetafield($metafields: [MetafieldsSetInput!]!) {
+        metafieldsSet(metafields: $metafields) {
+          metafields { id key namespace value type }
+          userErrors { field message }
+        }
+      }
+    `,
+      {
+        variables: {
+          metafields: [
+            {
+              ownerId: entityId,
+              namespace: "custom",
+              key: "targetCompanyId",
+              value: targetCompanyIdValue,
+              type: "number_integer",
+            },
+          ],
+        },
+      }
+    );
+
+    const json = await resp.json();
+    const errs = json.data?.metafieldsSet?.userErrors || [];
+
+    // Improve unique/duplicate error clarity
+    const processed = errs.map((e) =>
+      /unique|duplicate|already exists/i.test(e.message)
+        ? {
+            ...e,
+            message:
+              "This target company ID is already in use by another company. Please use a unique target company ID.",
+          }
+        : e
+    );
+
+    return {
+      success: processed.length === 0,
+      metafields: json.data?.metafieldsSet?.metafields,
+      errors: processed,
+    };
+  }
+
   return { success: false, errors: [{ message: "Invalid action type" }] };
 };
 
@@ -148,6 +206,7 @@ export default function Metafields() {
 
   const [selectedEntityId, setSelectedEntityId] = useState("");
   const [emailValue, setEmailValue] = useState("");
+  const [targetCompanyIdValue, setTargetCompanyIdValue] = useState("");
   const [toast, setToast] = useState({ open: false, content: "", error: false });
 
   // Prepare <Select> options for companies
@@ -158,22 +217,44 @@ export default function Metafields() {
 
   // Prepare table rows
   const tableRows = companies.map(({ node }) => {
-    const mfEdge = node.metafields?.edges?.[0];
-    const val = mfEdge?.node?.value || "Not set";
-    const badge = mfEdge ? (
+    const emailMf = node.metafields?.edges?.find(e => e.node.key === "companyEmail");
+    const targetIdMf = node.metafields?.edges?.find(e => e.node.key === "targetCompanyId");
+    
+    const emailVal = emailMf?.node?.value || "Not set";
+    const targetIdVal = targetIdMf?.node?.value || "Not set";
+    
+    const emailBadge = emailMf ? (
+      <Badge status="success">Set</Badge>
+    ) : (
+      <Badge status="attention">Not set</Badge>
+    );
+    
+    const targetIdBadge = targetIdMf ? (
       <Badge status="success">Set</Badge>
     ) : (
       <Badge status="attention">Not set</Badge>
     );
 
-    return [node.name || "Unnamed", node.id.replace("gid://shopify/Company/", ""), val, badge];
+    return [
+      node.name || "Unnamed", 
+      node.id.replace("gid://shopify/Company/", ""), 
+      emailVal, 
+      emailBadge,
+      targetIdVal,
+      targetIdBadge
+    ];
   });
 
   useEffect(() => {
     if (!fetcher.data) return;
     if (fetcher.data.success) {
-      shopify.toast.show("Company email saved");
-      setEmailValue("");
+      if (fetcher.formData?.get("actionType") === "setMetafield") {
+        shopify.toast.show("Company email saved");
+        setEmailValue("");
+      } else if (fetcher.formData?.get("actionType") === "setTargetCompanyId") {
+        shopify.toast.show("Target company ID saved");
+        setTargetCompanyIdValue("");
+      }
     } else if (fetcher.data.errors?.length) {
       setToast({ open: true, content: `Error: ${fetcher.data.errors[0].message}`, error: true });
     }
@@ -190,9 +271,25 @@ export default function Metafields() {
     );
   };
 
+  const handleSaveTargetCompanyId = () => {
+    if (!selectedEntityId || !targetCompanyIdValue.trim()) {
+      setToast({ open: true, content: "Select a company and enter a target company ID.", error: true });
+      return;
+    }
+    fetcher.submit(
+      { actionType: "setTargetCompanyId", entityId: selectedEntityId, targetCompanyIdValue },
+      { method: "POST" }
+    );
+  };
+
   const hasDefinition =
     (metafieldDefinitions.companies || []).some(
       (e) => e.node.namespace === "custom" && e.node.key === "companyEmail"
+    );
+
+  const hasTargetCompanyIdDefinition =
+    (metafieldDefinitions.companies || []).some(
+      (e) => e.node.namespace === "custom" && e.node.key === "targetCompanyId"
     );
 
   return (
@@ -237,11 +334,44 @@ export default function Metafields() {
           <Card>
             <BlockStack gap="300">
               <Text as="h2" variant="headingMd">
+                Target Company ID Metafield
+              </Text>
+              {!hasTargetCompanyIdDefinition && (
+                <Text variant="bodyMd" tone="critical">
+                  The metafield definition <code>custom.targetCompanyId</code> was not found. Return to the Dashboard to initialize it.
+                </Text>
+              )}
+
+              <Select
+                label="Company"
+                placeholder="Select a company"
+                options={companyOptions}
+                onChange={setSelectedEntityId}
+                value={selectedEntityId}
+              />
+              <TextField
+                label="Target Company ID"
+                value={targetCompanyIdValue}
+                onChange={setTargetCompanyIdValue}
+                type="number"
+                helpText="Must be a unique integer across companies"
+              />
+              <Button onClick={handleSaveTargetCompanyId} variant="primary" disabled={!hasTargetCompanyIdDefinition || fetcher.state === "submitting"}>
+                {fetcher.state === "submitting" ? "Saving…" : "Save Target Company ID"}
+              </Button>
+            </BlockStack>
+          </Card>
+        </Layout.Section>
+
+        <Layout.Section>
+          <Card>
+            <BlockStack gap="300">
+              <Text as="h2" variant="headingMd">
                 Companies Overview
               </Text>
               <DataTable
-                columnContentTypes={["text", "text", "text", "text"]}
-                headings={["Company", "Company ID", "Email (custom.companyEmail)", "Status"]}
+                columnContentTypes={["text", "text", "text", "text", "text", "text"]}
+                headings={["Company", "Company ID", "Email (custom.companyEmail)", "Email Status", "Target Company ID (custom.targetCompanyId)", "Target ID Status"]}
                 rows={tableRows}
               />
             </BlockStack>

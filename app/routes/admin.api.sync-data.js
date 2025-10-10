@@ -149,37 +149,240 @@ export const action = async ({ request }) => {
 
   case "company":
     // Handle company updates
-    const companyResponse = await admin.graphql(`mutation companyUpdate($companyId: ID!, $input: CompanyInput!) {
-      companyUpdate(companyId: $companyId, input: $input) {
-        company {
-          id
-          name
-          note
-          externalId
+    let companyId = null;
+    let companyData = null;
+    const emailFromData = updateData.body.email;
+    let isNewCompany = false;
+
+    // First, check if a company exists with this email in the Company Email metafield
+    if (emailFromData) {
+      const companiesWithEmailQuery = await admin.graphql(`query getCompaniesByEmail($first: Int!, $query: String!) {
+        companies(first: $first, query: $query) {
+          edges {
+            node {
+              id
+              name
+              metafields(first: 10) {
+                edges {
+                  node {
+                    namespace
+                    key
+                    value
+                  }
+                }
+              }
+            }
+          }
         }
-        userErrors {
-          field
-          message
+      }`, {
+        variables: {
+          first: 250,
+          query: `metafields.custom.companyEmail:'${emailFromData}'`,
+        },
+      });
+
+      const companiesWithEmailData = await companiesWithEmailQuery.json();
+      const existingCompanyWithEmail = companiesWithEmailData.data.companies.edges.find(edge => {
+        return edge.node.metafields.edges.some(metafield => 
+          metafield.node.namespace === "custom" && 
+          metafield.node.key === "companyEmail" && 
+          metafield.node.value === emailFromData
+        );
+      });
+
+      if (existingCompanyWithEmail) {
+        // Company exists with this email, use existing company
+        companyId = existingCompanyWithEmail.node.id;
+        
+        // Update existing company
+        const companyResponse = await admin.graphql(`mutation companyUpdate($companyId: ID!, $input: CompanyInput!) {
+          companyUpdate(companyId: $companyId, input: $input) {
+            company {
+              id
+              name
+              note
+              externalId
+            }
+            userErrors {
+              field
+              message
+            }
+          }
+        }`, {
+          variables: {
+            companyId: companyId,
+            input: {
+              name: updateData.body.name || updateData.body.company_name,
+              note: updateData.body.note || updateData.body.description || "",
+              externalId: updateData.body.externalId || updateData.body.targetId?.toString(),
+            },
+          },
+        });
+
+        companyData = await companyResponse.json();
+        
+        if (companyData.data.companyUpdate.userErrors.length > 0) {
+          return json({
+            success: false,
+            errors: companyData.data.companyUpdate.userErrors.map(error => error.message),
+          }, { status: 400 });
+        }
+
+        // Set/Update the Target Company ID metafield for the existing company
+        if (updateData.body.targetId) {
+          const setTargetIdMetafieldResponse = await admin.graphql(`mutation metafieldSet($metafields: [MetafieldsSetInput!]!) {
+            metafieldsSet(metafields: $metafields) {
+              metafields {
+                id
+                namespace
+                key
+                value
+              }
+              userErrors {
+                field
+                message
+              }
+            }
+          }`, {
+            variables: {
+              metafields: [
+                {
+                  ownerId: companyId,
+                  namespace: "custom",
+                  key: "targetCompanyId",
+                  value: updateData.body.targetId.toString(),
+                  type: "number_integer"
+                }
+              ]
+            },
+          });
+
+          const targetIdMetafieldData = await setTargetIdMetafieldResponse.json();
+          if (targetIdMetafieldData.data.metafieldsSet.userErrors.length > 0) {
+            console.error("Warning: Failed to set target company ID metafield:", targetIdMetafieldData.data.metafieldsSet.userErrors);
+          }
+        }
+      } else {
+        // No company exists with this email, create a new company
+        isNewCompany = true;
+        const createCompanyResponse = await admin.graphql(`mutation companyCreate($input: CompanyCreateInput!) {
+          companyCreate(input: $input) {
+            company {
+              id
+              name
+              note
+              externalId
+            }
+            userErrors {
+              field
+              message
+            }
+          }
+        }`, {
+          variables: {
+            input: {
+              company: {
+                name: updateData.body.name || updateData.body.company_name || "New Company",
+                note: updateData.body.note || updateData.body.description || "",
+                externalId: updateData.body.externalId || updateData.body.targetId?.toString(),
+              }
+            },
+          },
+        });
+
+        companyData = await createCompanyResponse.json();
+        
+        if (companyData.data.companyCreate.userErrors.length > 0) {
+          return json({
+            success: false,
+            errors: companyData.data.companyCreate.userErrors.map(error => error.message),
+          }, { status: 400 });
+        }
+
+        companyId = companyData.data.companyCreate.company.id;
+
+        // Set the Company Email and Target Company ID metafields for the new company
+        const metafieldsToSet = [
+          {
+            ownerId: companyId,
+            namespace: "custom",
+            key: "companyEmail",
+            value: emailFromData,
+            type: "single_line_text_field"
+          }
+        ];
+
+        // Add Target Company ID metafield if targetId is available
+        if (updateData.body.targetId) {
+          metafieldsToSet.push({
+            ownerId: companyId,
+            namespace: "custom",
+            key: "targetCompanyId",
+            value: updateData.body.targetId.toString(),
+            type: "number_integer"
+          });
+        }
+
+        const setMetafieldsResponse = await admin.graphql(`mutation metafieldSet($metafields: [MetafieldsSetInput!]!) {
+          metafieldsSet(metafields: $metafields) {
+            metafields {
+              id
+              namespace
+              key
+              value
+            }
+            userErrors {
+              field
+              message
+            }
+          }
+        }`, {
+          variables: {
+            metafields: metafieldsToSet
+          },
+        });
+
+        const metafieldsData = await setMetafieldsResponse.json();
+        if (metafieldsData.data.metafieldsSet.userErrors.length > 0) {
+          console.error("Warning: Failed to set metafields:", metafieldsData.data.metafieldsSet.userErrors);
         }
       }
-    }`, {
-      variables: {
-        companyId: `gid://shopify/Company/${updateData.body.externalId || updateData.body.company_id || entry.targetId}`,
-        input: {
-          name: updateData.body.name || updateData.body.company_name,
-          note: updateData.body.note || updateData.body.description || "",
-          externalId: updateData.body.externalId || updateData.body.targetId?.toString(),
+    } else {
+      // Fallback to original logic if no email provided
+      const companyResponse = await admin.graphql(`mutation companyUpdate($companyId: ID!, $input: CompanyInput!) {
+        companyUpdate(companyId: $companyId, input: $input) {
+          company {
+            id
+            name
+            note
+            externalId
+          }
+          userErrors {
+            field
+            message
+          }
+        }
+      }`, {
+        variables: {
+          companyId: `gid://shopify/Company/${updateData.body.externalId || updateData.body.company_id || entry.targetId}`,
+          input: {
+            name: updateData.body.name || updateData.body.company_name,
+            note: updateData.body.note || updateData.body.description || "",
+            externalId: updateData.body.externalId || updateData.body.targetId?.toString(),
+          },
         },
-      },
-    });
+      });
 
-    const companyData = await companyResponse.json();
-    
-    if (companyData.data.companyUpdate.userErrors.length > 0) {
-      return json({
-        success: false,
-        errors: companyData.data.companyUpdate.userErrors.map(error => error.message),
-      }, { status: 400 });
+      companyData = await companyResponse.json();
+      
+      if (companyData.data.companyUpdate.userErrors.length > 0) {
+        return json({
+          success: false,
+          errors: companyData.data.companyUpdate.userErrors.map(error => error.message),
+        }, { status: 400 });
+      }
+
+      companyId = `gid://shopify/Company/${updateData.body.externalId || updateData.body.company_id || entry.targetId}`;
     }
 
     // First, check if company already has locations
@@ -202,7 +405,7 @@ export const action = async ({ request }) => {
       }
     }`, {
       variables: {
-        companyId: `gid://shopify/Company/${updateData.body.externalId || updateData.body.company_id || entry.targetId}`,
+        companyId: companyId,
       },
     });
 
@@ -213,19 +416,13 @@ export const action = async ({ request }) => {
     let locationResult = null;
 
     if (existingLocations.length > 0) {
-      // Update existing location
+      // Update existing location name first
       const existingLocationId = existingLocations[0].node.id;
-      locationResponse = await admin.graphql(`mutation companyLocationUpdate($companyLocationId: ID!, $input: CompanyLocationInput!) {
+      const locationUpdateResponse = await admin.graphql(`mutation companyLocationUpdate($companyLocationId: ID!, $input: CompanyLocationUpdateInput!) {
         companyLocationUpdate(companyLocationId: $companyLocationId, input: $input) {
           companyLocation {
             id
             name
-            shippingAddress {
-              address1
-              address2
-              city
-              zip
-            }
           }
           userErrors {
             field
@@ -237,20 +434,46 @@ export const action = async ({ request }) => {
           companyLocationId: existingLocationId,
           input: {
             name: updateData.body.address1 || "Main Location",
-            shippingAddress: {
-              address1: updateData.body.address1 || "",
-              address2: updateData.body.address2 || "",
-              city: updateData.body.city || "",
-              countryCode: updateData.body.country || "",
-              zip: updateData.body.zipCode || "",
-            }
           },
         },
       });
 
+      // Update the shipping address using companyLocationAssignAddress
+      locationResponse = await admin.graphql(`mutation companyLocationAssignAddress($locationId: ID!, $address: CompanyAddressInput!, $addressTypes: [CompanyAddressType!]!) {
+        companyLocationAssignAddress(locationId: $locationId, address: $address, addressTypes: $addressTypes) {
+          addresses {
+            id
+            address1
+            address2
+            city
+            zip
+            countryCode
+          }
+          userErrors {
+            field
+            message
+          }
+        }
+      }`, {
+        variables: {
+          locationId: existingLocationId,
+          address: {
+            address1: updateData.body.address1 || "",
+            address2: updateData.body.address2 || "",
+            city: updateData.body.city || "",
+            countryCode: "IN",
+            zip: updateData.body.zipCode || "",
+          },
+          addressTypes: ["SHIPPING"]
+        },
+      });
+
       const locationData = await locationResponse.json();
-      if (locationData.data.companyLocationUpdate.userErrors.length === 0) {
-        locationResult = locationData.data.companyLocationUpdate.companyLocation;
+      if (locationData.data.companyLocationAssignAddress.userErrors.length === 0) {
+        locationResult = {
+          id: existingLocationId,
+          addresses: locationData.data.companyLocationAssignAddress.addresses
+        };
       }
     } else {
       // Create new location if none exists
@@ -273,14 +496,14 @@ export const action = async ({ request }) => {
         }
       }`, {
         variables: {
-          companyId: `gid://shopify/Company/${updateData.body.externalId || updateData.body.company_id || entry.targetId}`,
+          companyId: companyId,
           input: {
             name: updateData.body.address1 || "Main Location",
             shippingAddress: {
               address1: updateData.body.address1 || "",
               address2: updateData.body.address2 || "",
               city: updateData.body.city || "",
-              countryCode: updateData.body.country || "",
+              countryCode: "IN",
               zip: updateData.body.zipCode || "",
             }
           },
@@ -294,20 +517,23 @@ export const action = async ({ request }) => {
     }
 
     // Update the entry status to success
+    const finalCompany = isNewCompany ? companyData.data.companyCreate.company : companyData.data.companyUpdate.company;
+    
     await db.I95DevERPMessage.update({
       where: { id: entry.id },
       data: { 
         status: "success", 
         counter: "1", 
-        shopifyId: companyData.data.companyUpdate.company.id,
+        shopifyId: finalCompany.id,
         updatedBy: "Laravel" 
       },
     });
 
     return json({ 
       success: true, 
-      company: companyData.data.companyUpdate.company,
-      location: locationResult
+      company: finalCompany,
+      location: locationResult,
+      isNewCompany: isNewCompany
     });
     break;
 

@@ -17,6 +17,18 @@ export const loader = async ({ request }) => {
         uniqueValues: { enabled: true },
       },
     },
+    {
+      name: "Target Company ID",
+      namespace: "custom",
+      key: "targetCompanyId",
+      description:
+        "Target company ID associated with the company (enforced unique by app)",
+      type: "number_integer",
+      ownerType: "COMPANY",
+      capabilities: {
+        uniqueValues: { enabled: true },
+      },
+    },
   ];
 
   try {
